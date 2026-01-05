@@ -514,24 +514,110 @@ export const analyzeCodeSubmission = async (code: string, problem: InterviewProb
 };
 
 export const syncLeetCodeStats = async (username: string): Promise<LeetCodeStats> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        username,
-        totalSolved: 342,
-        ranking: 145002,
-        topicSkills: [
-          {
-            category: "Linear Structures",
-            topics: [
-              { name: "Arrays", solved: 120, level: 4 },
-              { name: "Strings", solved: 85, level: 4 },
-            ]
-          }
-        ]
-      });
-    }, 1500);
-  });
+  const solvedToLevel = (n: number): 0 | 1 | 2 | 3 | 4 => {
+    if (n >= 150) return 4;
+    if (n >= 80) return 3;
+    if (n >= 30) return 2;
+    if (n >= 10) return 1;
+    return 0;
+  };
+
+  const buildFromGraphQL = (data: any): LeetCodeStats => {
+    const user = data?.data?.matchedUser;
+    if (!user) throw new Error("User not found on LeetCode");
+
+    const ranking = user.profile?.ranking ?? 0;
+    const submission = user.submitStatsGlobal?.acSubmissionNum || [];
+    const totalSolved = submission.reduce((sum: number, item: any) => sum + (item?.count || 0), 0);
+
+    const tagCounts = user.tagProblemCounts;
+    const allTags = [
+      ...(tagCounts?.advanced || []),
+      ...(tagCounts?.intermediate || []),
+      ...(tagCounts?.fundamental || []),
+    ];
+
+    const topics = allTags
+      .map((t: any) => ({
+        name: t.tagName,
+        solved: t.problemsSolved || 0,
+        level: solvedToLevel(t.problemsSolved || 0),
+      }))
+      .sort((a: any, b: any) => b.solved - a.solved)
+      .slice(0, 25); // keep it concise
+
+    return {
+      username,
+      totalSolved,
+      ranking,
+      topicSkills: [
+        {
+          category: "Problem Tags",
+          topics,
+        },
+      ],
+    };
+  };
+
+  // Primary: LeetCode GraphQL (more accurate, includes tag counts)
+  const graphqlQuery = `
+    query userProblemsSolved($username: String!) {
+      matchedUser(username: $username) {
+        profile { ranking }
+        submitStatsGlobal { acSubmissionNum { difficulty count submissions } }
+        tagProblemCounts {
+          advanced { tagName problemsSolved }
+          intermediate { tagName problemsSolved }
+          fundamental { tagName problemsSolved }
+        }
+      }
+    }
+  `;
+
+  try {
+    const res = await fetch("https://leetcode.com/graphql", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ query: graphqlQuery, variables: { username } }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`LeetCode GraphQL failed: ${res.status}`);
+    }
+
+    const data = await res.json();
+    return buildFromGraphQL(data);
+  } catch (err) {
+    console.warn("LeetCode GraphQL failed, falling back:", err);
+  }
+
+  // Fallback: public stats API (no tag breakdown)
+  const fallbackUrl = `https://leetcode-stats-api.herokuapp.com/${encodeURIComponent(username)}`;
+  const fallback = await fetch(fallbackUrl);
+  if (!fallback.ok) {
+    throw new Error("Unable to fetch LeetCode stats. Check username or try again.");
+  }
+  const json = await fallback.json();
+
+  const topicSkills = [
+    {
+      category: "Difficulty",
+      topics: [
+        { name: "Easy", solved: json.easySolved || 0, level: solvedToLevel(json.easySolved || 0) },
+        { name: "Medium", solved: json.mediumSolved || 0, level: solvedToLevel(json.mediumSolved || 0) },
+        { name: "Hard", solved: json.hardSolved || 0, level: solvedToLevel(json.hardSolved || 0) },
+      ],
+    },
+  ];
+
+  return {
+    username,
+    totalSolved: json.totalSolved || 0,
+    ranking: json.ranking || 0,
+    topicSkills,
+  };
 };
 
 export const getRecommendedProblem = async (weakTopics: string[]): Promise<RecommendedProblem> => {

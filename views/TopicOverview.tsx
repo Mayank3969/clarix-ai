@@ -150,7 +150,14 @@ export const TopicOverview = ({ data, onAlgorithmClick, onBack }: TopicOverviewP
                     return (
                         <button
                             key={algo.id}
-                            onClick={() => !isLocked && onAlgorithmClick(algo)}
+                            onClick={() => {
+                                if (isLocked) return;
+                                if (algo.url) {
+                                  window.open(algo.url, "_blank", "noopener,noreferrer");
+                                } else {
+                                  onAlgorithmClick(algo);
+                                }
+                            }}
                             disabled={isLocked}
                             className={`group relative p-5 rounded-xl border text-left transition-all duration-300 ${
                                 isLocked 

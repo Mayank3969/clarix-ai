@@ -16,14 +16,15 @@ import { MockInterview } from "./views/MockInterview";
 import { MockInterviewSession } from "./views/MockInterviewSession";
 import { AdminDashboard } from "./views/AdminDashboard";
 import { SystemArchitecture } from "./views/SystemArchitecture";
-import { MOCK_USER, MOCK_TOPICS, MOCK_TOPIC_OVERVIEW } from "./data";
-import { View, Topic, LeetCodeStats, SubAlgorithm, Notification, UserProfile } from "./types";
+import { MOCK_USER, MOCK_TOPICS, TOPIC_OVERVIEWS } from "./data";
+import { View, Topic, LeetCodeStats, SubAlgorithm, Notification, UserProfile, TopicOverviewData } from "./types";
 
 const AppContent = () => {
   const { currentUser } = useAuth();
   const [currentView, setView] = useState<View>("Dashboard");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState<Topic>(MOCK_TOPICS[0]);
+  const [selectedOverview, setSelectedOverview] = useState<TopicOverviewData>(TOPIC_OVERVIEWS[MOCK_TOPICS[0].id]);
   const [selectedAlgorithm, setSelectedAlgorithm] = useState<SubAlgorithm | null>(null);
   const [leetcodeStats, setLeetcodeStats] = useState<LeetCodeStats | null>(null);
   const [aiContextMessage, setAiContextMessage] = useState<string | undefined>(undefined);
@@ -48,10 +49,11 @@ const AppContent = () => {
     };
   }, [currentUser]);
 
-  const navigateToTopicOverview = (topic: Topic) => {
+    const navigateToTopicOverview = (topic: Topic) => {
       setSelectedTopic(topic);
+      setSelectedOverview(TOPIC_OVERVIEWS[topic.id] || TOPIC_OVERVIEWS["dp"]);
       setView("TopicOverview"); 
-  };
+    };
 
   const navigateToAlgorithm = (algorithm: SubAlgorithm) => {
       setSelectedAlgorithm(algorithm);
@@ -140,11 +142,11 @@ const AppContent = () => {
         return <Topics onTopicClick={navigateToTopicOverview} />;
       case "TopicOverview":
         return (
-            <TopicOverview 
-                data={MOCK_TOPIC_OVERVIEW} 
-                onAlgorithmClick={navigateToAlgorithm}
-                onBack={() => setView("Dashboard")}
-            />
+          <TopicOverview 
+            data={selectedOverview} 
+            onAlgorithmClick={navigateToAlgorithm}
+            onBack={() => setView("Dashboard")}
+          />
         );
       case "AlgorithmPage":
         return (

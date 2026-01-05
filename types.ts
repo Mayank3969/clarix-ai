@@ -127,6 +127,7 @@ export interface SubAlgorithm {
   timeComplexity: string;
   spaceComplexity: string;
   status: "Locked" | "Completed" | "Available";
+  url?: string; // Optional LeetCode link
 }
 
 export interface TopicOverviewData {

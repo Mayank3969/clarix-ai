@@ -1,8 +1,7 @@
 
-import React, { useEffect, useState } from "react";
-import { MOCK_USER_STATS } from "../data";
+import React, { useEffect, useMemo, useState } from "react";
 import { syncLeetCodeStats, fetchUserReflectionJournal } from "../api";
-import { LeetCodeStats, SolvedProblemHistory, UserProfile } from "../types";
+import { LeetCodeStats, SolvedProblemHistory, UserProfile, UserStats } from "../types";
 import { SkillHeatmap } from "../components/SkillHeatmap";
 import { UserStatsDashboard } from "../components/UserStatsDashboard";
 import { TrophyCase } from "../components/TrophyCase";
@@ -13,16 +12,56 @@ export const Profile = ({ user, stats, onSync }: { user: UserProfile; stats: Lee
   const [journal, setJournal] = useState<SolvedProblemHistory[]>([]);
   const [journalLoading, setJournalLoading] = useState(false);
 
-  useEffect(() => {
-    if (!stats) {
-      const fetchStats = async () => {
-        const data = await syncLeetCodeStats("alexdev_leetcode");
-        onSync(data);
-        setLoading(false);
-      };
-      fetchStats();
-    }
-  }, [stats, onSync]);
+    // Derive dashboard-friendly stats from LeetCode stats; fallback to simple defaults
+    const derivedStats: UserStats | null = useMemo(() => {
+        if (!stats) return null;
+
+        const totalSolved = stats.totalSolved || 0;
+        const topicsFlat = stats.topicSkills.flatMap((c) => c.topics) || [];
+        const maxSolved = Math.max(150, ...topicsFlat.map((t) => t.solved || 0));
+        const skillRadar = topicsFlat.slice(0, 6).map((t) => ({
+            subject: t.name,
+            A: t.solved,
+            fullMark: maxSolved,
+        }));
+
+        const weakest = [...topicsFlat]
+            .sort((a, b) => (a.solved || 0) - (b.solved || 0))
+            .slice(0, 2)
+            .map((t) => t.name);
+
+        // Build a lightweight reputation trend using total solved as a proxy
+        const monthly = 5;
+        const step = Math.max(5, Math.floor(totalSolved / monthly));
+        const reputationHistory = Array.from({ length: monthly }, (_, idx) => ({
+            date: `M${idx + 1}`,
+            score: step * (idx + 1),
+        }));
+
+        return {
+            topicsLearned: topicsFlat.length,
+            totalSolved,
+            totalAttempted: Math.max(totalSolved, Math.round(totalSolved * 1.15)),
+            accuracyRate: totalSolved > 0 ? 80 + Math.min(15, totalSolved / 50) : 78,
+            weakAreas: weakest,
+            streakDays: 7,
+            reputationHistory,
+            skillRadar,
+        };
+    }, [stats]);
+
+    useEffect(() => {
+        if (!stats) {
+            const fetchStats = async () => {
+                const data = await syncLeetCodeStats("alexdev_leetcode");
+                onSync(data);
+                setLoading(false);
+            };
+            fetchStats();
+        } else {
+            setLoading(false);
+        }
+    }, [stats, onSync]);
 
   useEffect(() => {
     if (activeTab === 'journal') {
@@ -84,15 +123,21 @@ export const Profile = ({ user, stats, onSync }: { user: UserProfile; stats: Lee
         {activeTab === 'overview' ? (
             <>
                 {/* Visual Stats Dashboard */}
-                <div>
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="w-8 h-8 rounded-lg bg-slate-800 text-blue-400 flex items-center justify-center">
-                            <i className="fa-solid fa-chart-line"></i>
-                        </div>
-                        <h2 className="text-2xl font-bold text-slate-900">Performance Analytics</h2>
-                    </div>
-                    <UserStatsDashboard stats={MOCK_USER_STATS} />
-                </div>
+                                <div>
+                                        <div className="flex items-center gap-3 mb-6">
+                                                <div className="w-8 h-8 rounded-lg bg-slate-800 text-blue-400 flex items-center justify-center">
+                                                        <i className="fa-solid fa-chart-line"></i>
+                                                </div>
+                                                <h2 className="text-2xl font-bold text-slate-900">Performance Analytics</h2>
+                                        </div>
+                                        {derivedStats ? (
+                                            <UserStatsDashboard stats={derivedStats} />
+                                        ) : (
+                                            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm text-slate-500">
+                                                Fetching your stats...
+                                            </div>
+                                        )}
+                                </div>
 
                 {/* Trophy Case */}
                 <TrophyCase earnedBadgeIds={user.badges} />

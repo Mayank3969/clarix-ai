@@ -40,34 +40,112 @@ export const MOCK_USER: UserProfile = {
 };
 
 export const MOCK_TOPICS: Topic[] = [
-  { id: "1", title: "Arrays & Hashing", status: "Mastered", progress: 15, total: 15, icon: "fa-layer-group" },
-  { id: "2", title: "Two Pointers", status: "Mastered", progress: 8, total: 10, icon: "fa-arrows-left-right" },
-  { id: "3", title: "Linked Lists", status: "Weak", progress: 3, total: 12, icon: "fa-link" },
-  { id: "4", title: "Trees", status: "In Progress", progress: 5, total: 18, icon: "fa-network-wired" },
-  { id: "5", title: "Dynamic Programming", status: "Weak", progress: 2, total: 20, icon: "fa-cubes-stacked" },
-  { id: "6", title: "Graphs", status: "In Progress", progress: 4, total: 15, icon: "fa-circle-nodes" },
+  { id: "arrays", title: "Arrays & Hashing", status: "Mastered", progress: 15, total: 15, icon: "fa-layer-group" },
+  { id: "two-pointers", title: "Two Pointers", status: "Mastered", progress: 8, total: 10, icon: "fa-arrows-left-right" },
+  { id: "linked-lists", title: "Linked Lists", status: "Weak", progress: 3, total: 12, icon: "fa-link" },
+  { id: "trees", title: "Trees", status: "In Progress", progress: 5, total: 18, icon: "fa-network-wired" },
+  { id: "dp", title: "Dynamic Programming", status: "Weak", progress: 2, total: 20, icon: "fa-cubes-stacked" },
+  { id: "graphs", title: "Graphs", status: "In Progress", progress: 4, total: 15, icon: "fa-circle-nodes" },
 ];
 
-export const MOCK_TOPIC_OVERVIEW: TopicOverviewData = {
-  topicId: "5",
-  title: "Dynamic Programming",
-  description: "Dynamic Programming is an optimization technique used to solve recursive problems by breaking them down into simpler subproblems and storing the results to avoid redundant computations.",
-  difficulty: "Hard",
-  commonMistakes: [
-    "Confusing Greedy approach with DP.",
-    "Forgetting to handle base cases in recursion.",
-    "Incorrect state definition (e.g., missing a dimension in the DP table).",
-    "Not initializing the memoization table properly (e.g., using 0 instead of -1).",
-    "Over-optimizing space complexity before solving the problem."
-  ],
-  algorithms: [
-    { id: "dp-1", title: "Climbing Stairs", difficulty: "Easy", timeComplexity: "O(n)", spaceComplexity: "O(1)", status: "Completed" },
-    { id: "dp-2", title: "House Robber", difficulty: "Medium", timeComplexity: "O(n)", spaceComplexity: "O(1)", status: "Available" },
-    { id: "dp-3", title: "Longest Common Subsequence", difficulty: "Medium", timeComplexity: "O(n*m)", spaceComplexity: "O(n*m)", status: "Available" },
-    { id: "dp-4", title: "Knapsack Problem (0/1)", difficulty: "Medium", timeComplexity: "O(n*w)", spaceComplexity: "O(n*w)", status: "Available" },
-    { id: "dp-5", title: "Coin Change", difficulty: "Medium", timeComplexity: "O(n*amount)", spaceComplexity: "O(amount)", status: "Available" },
-    { id: "dp-6", title: "Edit Distance", difficulty: "Hard", timeComplexity: "O(n*m)", spaceComplexity: "O(n*m)", status: "Locked" },
-  ]
+// Topic-specific overviews with representative LeetCode problems
+export const TOPIC_OVERVIEWS: Record<string, TopicOverviewData> = {
+  arrays: {
+    topicId: "arrays",
+    title: "Arrays & Hashing",
+    description: "Master constant-time lookups, prefix sums, and in-place tricks to tackle classic array problems.",
+    difficulty: "Medium",
+    commonMistakes: [
+      "Forgetting to reset sliding window bounds correctly.",
+      "Using O(n²) nested loops where a hashmap works in O(n).",
+      "Mutating arrays while iterating without cloning or indexing carefully."
+    ],
+    algorithms: [
+      { id: "arr-1", title: "Two Sum", difficulty: "Easy", timeComplexity: "O(n)", spaceComplexity: "O(n)", status: "Completed", url: "https://leetcode.com/problems/two-sum/" },
+      { id: "arr-2", title: "Product of Array Except Self", difficulty: "Medium", timeComplexity: "O(n)", spaceComplexity: "O(1)", status: "Available", url: "https://leetcode.com/problems/product-of-array-except-self/" },
+      { id: "arr-3", title: "Subarray Sum Equals K", difficulty: "Medium", timeComplexity: "O(n)", spaceComplexity: "O(n)", status: "Available", url: "https://leetcode.com/problems/subarray-sum-equals-k/" },
+    ]
+  },
+  "two-pointers": {
+    topicId: "two-pointers",
+    title: "Two Pointers",
+    description: "Use converging or expanding pointers to reduce complexity on sorted arrays and strings.",
+    difficulty: "Medium",
+    commonMistakes: [
+      "Not moving both pointers correctly on duplicates.",
+      "Forgetting that sorted order is required for many patterns.",
+      "Mixing up window growth vs. shrink steps."
+    ],
+    algorithms: [
+      { id: "tp-1", title: "Valid Palindrome", difficulty: "Easy", timeComplexity: "O(n)", spaceComplexity: "O(1)", status: "Completed", url: "https://leetcode.com/problems/valid-palindrome/" },
+      { id: "tp-2", title: "3Sum", difficulty: "Medium", timeComplexity: "O(n^2)", spaceComplexity: "O(1)", status: "Available", url: "https://leetcode.com/problems/3sum/" },
+      { id: "tp-3", title: "Container With Most Water", difficulty: "Medium", timeComplexity: "O(n)", spaceComplexity: "O(1)", status: "Available", url: "https://leetcode.com/problems/container-with-most-water/" },
+    ]
+  },
+  "linked-lists": {
+    topicId: "linked-lists",
+    title: "Linked Lists",
+    description: "Traverse and manipulate nodes efficiently with pointers, cycle detection, and splitting techniques.",
+    difficulty: "Medium",
+    commonMistakes: [
+      "Not handling null pointers before dereferencing.",
+      "Forgetting to break cycles when reversing or re-linking.",
+      "Not updating both head and tail references on modifications."
+    ],
+    algorithms: [
+      { id: "ll-1", title: "Reverse Linked List", difficulty: "Easy", timeComplexity: "O(n)", spaceComplexity: "O(1)", status: "Completed", url: "https://leetcode.com/problems/reverse-linked-list/" },
+      { id: "ll-2", title: "Linked List Cycle", difficulty: "Easy", timeComplexity: "O(n)", spaceComplexity: "O(1)", status: "Available", url: "https://leetcode.com/problems/linked-list-cycle/" },
+      { id: "ll-3", title: "Merge Two Sorted Lists", difficulty: "Easy", timeComplexity: "O(n+m)", spaceComplexity: "O(1)", status: "Available", url: "https://leetcode.com/problems/merge-two-sorted-lists/" },
+    ]
+  },
+  trees: {
+    topicId: "trees",
+    title: "Trees",
+    description: "Master traversals, recursion patterns, and BST properties for balanced tree manipulation.",
+    difficulty: "Medium",
+    commonMistakes: [
+      "Incorrect base cases in recursive traversals.",
+      "Mixing preorder/inorder/postorder outputs.",
+      "Not handling null child pointers before access."
+    ],
+    algorithms: [
+      { id: "tr-1", title: "Maximum Depth of Binary Tree", difficulty: "Easy", timeComplexity: "O(n)", spaceComplexity: "O(h)", status: "Completed", url: "https://leetcode.com/problems/maximum-depth-of-binary-tree/" },
+      { id: "tr-2", title: "Validate Binary Search Tree", difficulty: "Medium", timeComplexity: "O(n)", spaceComplexity: "O(h)", status: "Available", url: "https://leetcode.com/problems/validate-binary-search-tree/" },
+      { id: "tr-3", title: "Lowest Common Ancestor of a BST", difficulty: "Medium", timeComplexity: "O(h)", spaceComplexity: "O(1)", status: "Available", url: "https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-search-tree/" },
+    ]
+  },
+  dp: {
+    topicId: "dp",
+    title: "Dynamic Programming",
+    description: "Break problems into subproblems, cache results, and optimize space for optimal substructure.",
+    difficulty: "Hard",
+    commonMistakes: [
+      "Forgetting base cases in tabulation.",
+      "Using incorrect state dimensions.",
+      "Over-optimizing space before correctness."
+    ],
+    algorithms: [
+      { id: "dp-1", title: "Climbing Stairs", difficulty: "Easy", timeComplexity: "O(n)", spaceComplexity: "O(1)", status: "Completed", url: "https://leetcode.com/problems/climbing-stairs/" },
+      { id: "dp-2", title: "House Robber", difficulty: "Medium", timeComplexity: "O(n)", spaceComplexity: "O(1)", status: "Available", url: "https://leetcode.com/problems/house-robber/" },
+      { id: "dp-3", title: "Coin Change", difficulty: "Medium", timeComplexity: "O(n*amount)", spaceComplexity: "O(amount)", status: "Available", url: "https://leetcode.com/problems/coin-change/" },
+    ]
+  },
+  graphs: {
+    topicId: "graphs",
+    title: "Graphs",
+    description: "Apply BFS/DFS, union-find, and shortest paths to navigate connectivity and traversal problems.",
+    difficulty: "Medium",
+    commonMistakes: [
+      "Not marking visited nodes correctly, causing infinite loops.",
+      "Forgetting to build an undirected graph with bidirectional edges.",
+      "Using DFS where BFS is required for shortest path on unweighted graphs."
+    ],
+    algorithms: [
+      { id: "gr-1", title: "Number of Islands", difficulty: "Medium", timeComplexity: "O(m*n)", spaceComplexity: "O(m*n)", status: "Completed", url: "https://leetcode.com/problems/number-of-islands/" },
+      { id: "gr-2", title: "Course Schedule", difficulty: "Medium", timeComplexity: "O(V+E)", spaceComplexity: "O(V+E)", status: "Available", url: "https://leetcode.com/problems/course-schedule/" },
+      { id: "gr-3", title: "Network Delay Time", difficulty: "Medium", timeComplexity: "O(E log V)", spaceComplexity: "O(V+E)", status: "Available", url: "https://leetcode.com/problems/network-delay-time/" },
+    ]
+  }
 };
 
 export const MOCK_COMMUNITY_POSTS: CommunityPost[] = [
